@@ -20,3 +20,4 @@ app.get("/me",async (req,res)=>{
     const session=await auth.api.getSession({headers:req.headers as any})
     res.json(session)
 })
+app.use("/create",)

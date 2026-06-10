@@ -19,6 +19,8 @@ model User {
   sessions      Session[]
   accounts      Account[]
   rooms Room[]
+  shapes Shape[]
+
 
   @@unique([email])
   @@map("user")
@@ -75,7 +77,28 @@ model Verification {
 model Room{
   id String @id @default(cuid())
   slug String @unique
+  name String
   ownerId String
   owner User @relation(fields:[ownerId],references:[id])
   createdAt DateTime @default(now())
+  shapes Shape[]
+
+  @@index([ownerId])
+  
+}
+
+model Shape{
+  id String @id @default(cuid())
+  data Json
+  roomId String
+  userId String
+  room Room @relation(fields:[roomId],references:[id])
+  user User @relation(fields:[userId],references:[id])
+
+  createdAt DateTime @default(now())
+
+  @@index([roomId])
+  @@index([userId])
+
+
 }
