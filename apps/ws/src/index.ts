@@ -1,12 +1,16 @@
-import { WebSocketServer } from "ws";
+import { WebSocketServer,WebSocket } from "ws";
 import { prisma } from "@repo/db";
+
+
+const rooms=new Map<string,Set<WebSocket>>()
+
 const ws=new WebSocketServer({port:3002})
 
 ws.on("connection", async (socket,req)=>{
 
     const url=new URL(req.url!,"http://localhost")
     const token=url.searchParams.get("token")
-    const roomSluug=url.searchParams.get("roomSlug")
+    const roomSlug=url.searchParams.get("roomSlug")
 
     const isValidated =await prisma.session.findFirst({
         where:{
@@ -17,11 +21,9 @@ ws.on("connection", async (socket,req)=>{
         }
     })
 
- 
-
     const room = await prisma.room.findUnique({
      where: {
-     slug: roomSluug!,
+     slug: roomSlug!,
      },
     });
 

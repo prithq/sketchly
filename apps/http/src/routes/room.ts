@@ -3,18 +3,19 @@ import { Router } from "express";
 import { prisma } from "@repo/db";
 
 import { requireAuth } from "../middleware/auth";
-import { CreateRoomInput } from "@repo/common";
+
 import { createRoomSchema } from "@repo/common";
+
 const router=Router()
 
-router.post("/",requireAuth,async (req,res)=>{
+router.post("/create",requireAuth,async (req,res)=>{
 
     const user=(req as any).user
 
     const parsed = createRoomSchema.safeParse(req.body);
     if (!parsed.success) {
     return res.status(400).json({
-      error: parsed.error.flatten(),
+      error: parsed.error.name
     });
   }
 
@@ -42,3 +43,43 @@ router.post("/",requireAuth,async (req,res)=>{
     });
 
 })
+
+router.get("/:slug",async (req,res)=>{
+
+    const slug=req.params.slug
+
+    const room=await prisma.room.findUnique({
+        where:{
+            slug:slug
+        }
+    })
+
+    if(!room){
+        return res.status(404).json({
+            message:"invalid room"
+        })
+    }
+
+    return res.json(room)
+})
+
+router.post("/:slug/join", requireAuth, async (req, res) => {
+    
+   const {slug}=req.body
+  const room = await prisma.room.findUnique({
+    where: {
+      slug: slug
+    },
+  });
+
+  if (!room) {
+    return res.status(404).json({
+      message: "Room not found",
+    });
+  }
+
+  return res.json({
+    success: true,
+    room,
+  });
+});

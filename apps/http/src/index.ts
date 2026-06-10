@@ -3,6 +3,7 @@ import { auth } from "@repo/auth";
 import { toNodeHandler } from "better-auth/node";
 
 const app = express();
+const roomRouter=express.Router()
 
 app.use(express.json());
 
@@ -20,4 +21,4 @@ app.get("/me",async (req,res)=>{
     const session=await auth.api.getSession({headers:req.headers as any})
     res.json(session)
 })
-app.use("/create",)
+app.use("/rooms",roomRouter)
