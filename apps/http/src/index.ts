@@ -1,9 +1,9 @@
 import express from "express";
 import { auth } from "@repo/auth";
 import { toNodeHandler } from "better-auth/node";
-
+import roomRouter from "../src/routes/room"
 const app = express();
-const roomRouter=express.Router()
+
 
 app.use(express.json());
 

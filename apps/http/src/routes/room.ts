@@ -6,9 +6,9 @@ import { requireAuth } from "../middleware/auth";
 
 import { createRoomSchema } from "@repo/common";
 
-const router=Router()
+const roomRouter: Router = Router();
 
-router.post("/create",requireAuth,async (req,res)=>{
+roomRouter.post("/create",requireAuth,async (req,res)=>{
 
     const user=(req as any).user
 
@@ -44,7 +44,7 @@ router.post("/create",requireAuth,async (req,res)=>{
 
 })
 
-router.get("/:slug",async (req,res)=>{
+roomRouter.get("/:slug",async (req,res)=>{
 
     const slug=req.params.slug
 
@@ -63,7 +63,7 @@ router.get("/:slug",async (req,res)=>{
     return res.json(room)
 })
 
-router.post("/:slug/join", requireAuth, async (req, res) => {
+roomRouter.post("/:slug/join", requireAuth, async (req, res) => {
     
    const {slug}=req.body
   const room = await prisma.room.findUnique({
@@ -83,3 +83,32 @@ router.post("/:slug/join", requireAuth, async (req, res) => {
     room,
   });
 });
+
+
+roomRouter.get("/:slug/shapes",async(req,res)=>{
+
+const room=await prisma.room.findUnique({
+  where:{
+    slug:req.params.slug!
+
+  }
+})
+
+if(!room){
+  return res.status(404).json({
+    message:"NO ROOM EXISTS"
+  })
+}
+
+const shapes=await prisma.shape.findMany({
+  where:{
+    roomId:room.id
+  },
+  orderBy:{
+    createdAt:"asc"
+  }
+})
+res.json(shapes)
+})
+
+export default roomRouter
