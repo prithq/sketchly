@@ -74,7 +74,7 @@ ws.on("connection", async (socket,req)=>{
         data:{
             roomId:room.id,
             userId:user.id,
-            data:ShapeType
+            shapeData:ShapeType
         }
     })
 

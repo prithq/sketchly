@@ -17,25 +17,23 @@ export interface Point {
   y: number;
 }
 
-export interface BaseShape {
-  id: string;
-  type: ShapeType;
-}
 
-export interface RectangleShape extends BaseShape {
+
+export interface RectangleShape {
   type: ShapeType.RECTANGLE;
   start: Point;
   width: number;
   height: number;
 }
 
-export interface CircleShape extends BaseShape {
+
+export interface CircleShape {
   type: ShapeType.CIRCLE;
   center: Point;
   radius: number;
 }
 
-export interface LineShape extends BaseShape {
+export interface LineShape {
   type: ShapeType.LINE;
   start: Point;
   end: Point;
@@ -45,3 +43,4 @@ export type Shape =
   | RectangleShape
   | CircleShape
   | LineShape;
+
