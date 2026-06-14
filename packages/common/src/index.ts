@@ -6,38 +6,31 @@ export const createRoomSchema = z.object({
 
 export type CreateRoomInput = z.infer<typeof createRoomSchema>;
 
-export enum ShapeType {
-  RECTANGLE = "RECTANGLE",
-  CIRCLE = "CIRCLE",
-  LINE = "LINE",
-}
-
-export interface Point {
-  x: number;
-  y: number;
-}
-
 
 
 export interface RectangleShape {
-  type: ShapeType.RECTANGLE;
-  start: Point;
+  type: "RECTANGLE";
+  x: number;
+  y: number;
   width: number;
   height: number;
 }
 
-
 export interface CircleShape {
-  type: ShapeType.CIRCLE;
-  center: Point;
+  type: "CIRCLE";
+  x: number;
+  y: number;
   radius: number;
 }
 
 export interface LineShape {
-  type: ShapeType.LINE;
-  start: Point;
-  end: Point;
+  type: "LINE";
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
 }
+
 
 export type Shape =
   | RectangleShape

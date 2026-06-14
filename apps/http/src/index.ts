@@ -2,13 +2,15 @@ import express from "express";
 import { auth } from "@repo/auth";
 import { toNodeHandler } from "better-auth/node";
 import roomRouter from "../src/routes/room"
+import cors from "cors"
 const app = express();
 
 
 app.use(express.json());
 
-app.use("/api/auth/", toNodeHandler(auth));
 
+app.use(cors({origin:"http://localhost:3000",credentials:true}))
+app.use("/api/auth/", toNodeHandler(auth));
 app.get("/health", (_, res) => {
   res.json({ ok: true });
 });

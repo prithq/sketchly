@@ -1,6 +1,6 @@
 import { WebSocketServer,WebSocket } from "ws";
 import { prisma } from "@repo/db";
-import { ShapeType } from "@repo/common";
+
 
 
 const rooms=new Map<string,Set<WebSocket>>()
@@ -74,7 +74,7 @@ ws.on("connection", async (socket,req)=>{
         data:{
             roomId:room.id,
             userId:user.id,
-            shapeData:ShapeType
+            shapeData:
         }
     })
 

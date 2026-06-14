@@ -1,108 +1,163 @@
 "use client";
-import React, { useState } from "react";
-import { useRef,useEffect } from "react";
-interface Rectangle {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
 
-import {Shape} from "@repo/common"
+import { useEffect, useRef } from "react";
+import { Shape } from "@repo/common";
 
-export default function Canvas(){
+export default function Canvas({ slug }: { slug: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const wsRef = useRef<WebSocket | null>(null);
 
-    const canvasRef=useRef<HTMLCanvasElement>(null)
-   
-    const clicked=useRef(false)
-    const startX=useRef(0)
-    const startY=useRef(0)
-    
-    const shapes=useRef<Shape[]>([])
+  const clicked = useRef(false);
+  const startX = useRef(0);
+  const startY = useRef(0);
 
-    type Tool="rectangle"
-    const[tool,setTool]=useState<Tool>("rectangle")
+  const shapes = useRef<Shape[]>([]);
 
-    
+  function redraw(
+    ctx: CanvasRenderingContext2D,
+    canvas: HTMLCanvasElement
+  ) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    useEffect(()=>{
+    shapes.current.forEach((shape) => {
+      if (shape.type === "RECTANGLE") {
+        ctx.strokeRect(
+          shape.x,
+          shape.y,
+          shape.width,
+          shape.height
+        );
+      }
+    });
+  }
 
+  // WebSocket
+  useEffect(() => {
+    const token = localStorage.getItem("token");
 
+    const ws = new WebSocket(
+      `ws://localhost:3002?token=${token}&roomSlug=${slug}`
+    );
 
-        if(canvasRef.current){
-            const canvas=canvasRef.current
-            const ctx=canvas.getContext("2d")
-            if(ctx)
-            ctx.strokeStyle="rgb(255, 255, 255)"
+    ws.onopen = () => {
+      console.log("Connected");
+    };
 
-            canvas.width = window.innerWidth; 
-            canvas.height = window.innerHeight;
+    ws.onclose = () => {
+      console.log("Disconnected");
+    };
 
-            function redraw(){
-                ctx?.clearRect(0,0,canvas.width,canvas.height)
-                shapes.current.forEach((shape)=>{
-                    ctx?.strokeRect(
-                        shape.x,
-                        shape.y,
-                        shape.width,
-                        shape.height
-                    )
-                })
-            }
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
 
-            if(!ctx)return
+      if (message.type === "RECTANGLE") {
+        shapes.current.push(message.shape);
 
-            canvas.addEventListener("mousedown",(e)=>{
+        const canvas = canvasRef.current;
+        const ctx = canvas?.getContext("2d");
 
-                
-                clicked.current=true
-                startX.current=e.clientX
-                startY.current=e.clientY
-                
+        if (!canvas || !ctx) return;
 
-            })
+        redraw(ctx, canvas);
+      }
+    };
 
-            canvas.addEventListener("mouseup",async(e)=>{
-                clicked.current=false
-                 const width=e.clientX-startX.current
-                 const height=e.clientY-startY.current
-                      
-                
-                shapes.current.push({
+    wsRef.current = ws;
 
-                     x: startX.current,
-                     y: startY.current,
-                     width,
-                     height,
-                 })
+    return () => {
+      ws.close();
+    };
+  }, [slug]);
 
-                 ctx.clearRect(0,0,canvas.width,canvas.height)
+  // Canvas
+  useEffect(() => {
+    const canvas = canvasRef.current;
 
-                 redraw()
+    if (!canvas) return;
 
-                
-            })
+    const ctx = canvas.getContext("2d");
 
-            canvas.addEventListener("mousemove",(e)=>{
-                if(!clicked.current)
-                    return
+    if (!ctx) return;
 
-               
-               
-                const width=e.clientX-startX.current
-                const height=e.clientY-startY.current
-                ctx.clearRect(0,0,canvas.width,canvas.height)
-                 redraw()
-                ctx.strokeStyle="white"
-                ctx.strokeRect(startX.current,startY.current,width,height)
-            })
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-        }
-    },[canvasRef])
+    ctx.strokeStyle = "white";
 
-    return(
-        <canvas ref={canvasRef} className="w-screen h-screen " />
-    )
+    const handleMouseDown = (e: MouseEvent) => {
+      clicked.current = true;
+      startX.current = e.clientX;
+      startY.current = e.clientY;
+    };
 
-    
+    const handleMouseUp = (e: MouseEvent) => {
+      if (!clicked.current) return;
+
+      clicked.current = false;
+
+      const width = e.clientX - startX.current;
+      const height = e.clientY - startY.current;
+
+      const shape = {
+        type: "RECTANGLE" as const,
+        x: startX.current,
+        y: startY.current,
+        width,
+        height,
+      };
+
+      shapes.current.push(shape);
+
+      wsRef.current?.send(
+        JSON.stringify({
+          type: "RECTANGLE",
+          shape,
+        })
+      );
+
+      redraw(ctx, canvas);
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!clicked.current) return;
+
+      const width = e.clientX - startX.current;
+      const height = e.clientY - startY.current;
+
+      redraw(ctx, canvas);
+
+      ctx.strokeRect(
+        startX.current,
+        startY.current,
+        width,
+        height
+      );
+    };
+
+    canvas.addEventListener("mousedown", handleMouseDown);
+    canvas.addEventListener("mouseup", handleMouseUp);
+    canvas.addEventListener("mousemove", handleMouseMove);
+
+    return () => {
+      canvas.removeEventListener(
+        "mousedown",
+        handleMouseDown
+      );
+      canvas.removeEventListener(
+        "mouseup",
+        handleMouseUp
+      );
+      canvas.removeEventListener(
+        "mousemove",
+        handleMouseMove
+      );
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="w-screen h-screen bg-slate-950"
+    />
+  );
 }
