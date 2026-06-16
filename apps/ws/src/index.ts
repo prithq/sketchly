@@ -3,6 +3,7 @@ import { prisma } from "@repo/db";
 
 
 
+
 const rooms=new Map<string,Set<WebSocket>>()
 
 
@@ -14,8 +15,11 @@ ws.on("connection", async (socket,req)=>{
     const url=new URL(req.url!,"http://localhost")
     const token=url.searchParams.get("token")
     const roomSlug=url.searchParams.get("roomSlug")
+     console.log("TOKEN:", token);
+  console.log("ROOM:", roomSlug);
 
     if (!token || !roomSlug) {
+        console.log("Missing token or room");
     socket.close();
     return;
 }
@@ -29,13 +33,17 @@ ws.on("connection", async (socket,req)=>{
         }
     })
 
+    console.log("SESSION:", !!isValidated);
+
     const room = await prisma.room.findUnique({
      where: {
      slug: roomSlug!,
      },
     });
+      console.log("ROOM FOUND:", !!room);
 
     if (!room || !isValidated) {
+        console.log("Validation failed");
     socket.close();
      return;
 }
@@ -53,31 +61,36 @@ ws.on("connection", async (socket,req)=>{
 
 
     const user=isValidated.user
-    console.log(
-  `${user.email} joined ${room.slug}`
-);
+   
+  console.log(`${user.email} joined ${room.slug}`);
 
-    socket.on("message",(data)=>{
+
+socket.on("message",async (data)=>{
 
         const roomSockets=rooms.get(room.slug)
 
+
         roomSockets?.forEach((client)=>{
             if(client!==socket){
-                client.send(JSON.parse(data.toString()))
+                client.send(data.toString())
             }
         })
+
+
+        
+        
+            await prisma.shape.create({
+                data:{
+                    roomId:room.id,
+                    userId:user.id,
+                    shapeData:JSON.parse(data.toString())
+                }
+            })
+
+
+
     
-    })
-
-
-    await prisma.shape.create({
-        data:{
-            roomId:room.id,
-            userId:user.id,
-            shapeData:
-        }
-    })
-
+    })        
 
 
     socket.on("close",()=>{
@@ -89,5 +102,6 @@ ws.on("connection", async (socket,req)=>{
             rooms.delete(room.slug)
         }
     })
-})
 
+
+})

@@ -5,6 +5,7 @@ import { prisma } from "@repo/db";
 import { requireAuth } from "../middleware/auth";
 
 import { createRoomSchema } from "@repo/common";
+import { string } from "zod";
 
 const roomRouter: Router = Router();
 
@@ -18,7 +19,29 @@ roomRouter.post("/create",requireAuth,async (req,res)=>{
       error: parsed.error.name
     });
   }
-
+  
+  
+  roomRouter.get("/:slug/shapes",async(req,res)=>{
+  
+  const room=await prisma.room.findUnique({
+    where:{
+      slug:req.params.slug!
+  
+    },
+    include:{
+      shapes:true
+    }
+  })
+  
+  if(!room){
+    return res.status(404).json({
+      message:"NO ROOM EXISTS"
+    })
+  }
+  
+    
+  res.json(room.shapes)
+  })
     const createRoom= await prisma.room.create({
        
         data:{
@@ -61,14 +84,21 @@ roomRouter.get("/:slug",async (req,res)=>{
     }
 
     return res.json(room)
-})
+  })
 
 roomRouter.post("/:slug/join", requireAuth, async (req, res) => {
     
-   const {slug}=req.body
+  // Ensure slug is a string (req.params can be string | string[] | undefined)
+  const rawSlug = req.params.slug;
+  const slug = Array.isArray(rawSlug) ? rawSlug[0] : rawSlug;
+
+  if (!slug) {
+    return res.status(400).json({ message: "Missing slug" });
+  }
+
   const room = await prisma.room.findUnique({
     where: {
-      slug: slug
+      slug,
     },
   });
 
@@ -84,32 +114,6 @@ roomRouter.post("/:slug/join", requireAuth, async (req, res) => {
   });
 });
 
-
-roomRouter.get("/:slug/shapes",async(req,res)=>{
-
-const room=await prisma.room.findUnique({
-  where:{
-    slug:req.params.slug!
-
-  }
-})
-
-if(!room){
-  return res.status(404).json({
-    message:"NO ROOM EXISTS"
-  })
-}
-
-const shapes=await prisma.shape.findMany({
-  where:{
-    roomId:room.id
-  },
-  orderBy:{
-    createdAt:"asc"
-  }
-})
-res.json(shapes)
-})
 
 
 

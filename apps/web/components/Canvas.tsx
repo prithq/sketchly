@@ -13,6 +13,30 @@ export default function Canvas({ slug }: { slug: string }) {
 
   const shapes = useRef<Shape[]>([]);
 
+
+  useEffect(() => {
+  async function loadShapes() {
+    const res = await fetch(
+      `http://localhost:3001/rooms/${slug}/shapes`
+    );
+
+    const data = await res.json();
+
+    shapes.current = data.map(
+      (shape: any) => shape.shapeData.shape
+    );
+
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+
+    if (!canvas || !ctx) return;
+
+    redraw(ctx, canvas);
+  }
+
+  loadShapes();
+}, [slug]);
+
   function redraw(
     ctx: CanvasRenderingContext2D,
     canvas: HTMLCanvasElement
@@ -32,7 +56,10 @@ export default function Canvas({ slug }: { slug: string }) {
   }
 
   // WebSocket
+
   useEffect(() => {
+
+
     const token = localStorage.getItem("token");
 
     const ws = new WebSocket(
@@ -71,6 +98,11 @@ export default function Canvas({ slug }: { slug: string }) {
 
   // Canvas
   useEffect(() => {
+
+
+
+
+
     const canvas = canvasRef.current;
 
     if (!canvas) return;

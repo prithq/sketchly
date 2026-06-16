@@ -11,6 +11,7 @@ export default async function RoomPage({
 
     const {slug}= await params
     const session = await authClient.getSession();
+    console.log(`this is session at frontend:${session}`)
 
 console.log(session);
   return (
