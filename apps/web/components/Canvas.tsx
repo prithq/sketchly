@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Shape } from "@repo/common";
+import { Shape } from "@repo/common/types";
 
 export default function Canvas({ slug }: { slug: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -189,7 +189,7 @@ export default function Canvas({ slug }: { slug: string }) {
   return (
     <canvas
       ref={canvasRef}
-      className="w-screen h-screen bg-slate-950"
+      className="w-screen h-screen"
     />
   );
 }

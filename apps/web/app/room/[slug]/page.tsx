@@ -2,6 +2,7 @@
 import React from "react";
 import Canvas from "@/components/Canvas";
 import { authClient } from "@/lib/auth-client";
+import Toolbar from "@/components/Toolbar";
 
 export default async function RoomPage({
   params,
@@ -16,7 +17,7 @@ export default async function RoomPage({
 console.log(session);
   return (
     <div>
-        
+        <Toolbar />
       <Canvas slug={slug}/>
     </div>
   );
