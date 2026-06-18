@@ -1,9 +1,14 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef,useState } from "react";
 import { Shape } from "@repo/common/types";
+import Toolbar from "./Toolbar";
+import {drawShape} from "@repo/common/drawShape"
+
 
 export default function Canvas({ slug }: { slug: string }) {
+
+  const [tool,setTool]=useState<"SELECT"|"RECTANGLE"|"CIRCLE"|"LINE">("CIRCLE")
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -15,6 +20,7 @@ export default function Canvas({ slug }: { slug: string }) {
 
 
   useEffect(() => {
+
   async function loadShapes() {
     const res = await fetch(
       `http://localhost:3001/rooms/${slug}/shapes`
@@ -44,14 +50,7 @@ export default function Canvas({ slug }: { slug: string }) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     shapes.current.forEach((shape) => {
-      if (shape.type === "RECTANGLE") {
-        ctx.strokeRect(
-          shape.x,
-          shape.y,
-          shape.width,
-          shape.height
-        );
-      }
+     drawShape(ctx,shape)
     });
   }
 
@@ -87,6 +86,28 @@ export default function Canvas({ slug }: { slug: string }) {
 
         redraw(ctx, canvas);
       }
+
+      if (message.type === "CIRCLE") {
+        shapes.current.push(message.shape);
+
+        const canvas = canvasRef.current;
+        const ctx = canvas?.getContext("2d");
+
+        if (!canvas || !ctx) return;
+
+        redraw(ctx, canvas);
+      }
+
+      if (message.type === "LINE") {
+        shapes.current.push(message.shape);
+
+        const canvas = canvasRef.current;
+        const ctx = canvas?.getContext("2d");
+
+        if (!canvas || !ctx) return;
+
+        redraw(ctx, canvas);
+      }
     };
 
     wsRef.current = ws;
@@ -100,10 +121,98 @@ export default function Canvas({ slug }: { slug: string }) {
   useEffect(() => {
 
 
+    if(tool==="CIRCLE"){
+
+      const canvas=canvasRef.current
+      if(!canvas)return
+
+      const ctx=canvas?.getContext("2d")
+
+      if(!ctx)return
+
+      canvas.width=window.innerWidth
+      canvas.height=window.innerHeight
+
+      ctx.strokeStyle="black"
+
+      const handleMouseDown=(e:MouseEvent)=>{
+
+        clicked.current=true
+        startX.current=e.clientX
+        startY.current=e.clientY
+
+
+        
+
+      }
+
+
+      const handleMouseUp=(e:MouseEvent)=>{
+
+        if(!clicked.current)return
+        clicked.current=false
+
+        
+        redraw(ctx,canvas)
+
+
+        
+        
+        
+      }
+      
+      const handleMouseMove=(e:MouseEvent)=>{
+        
+        if(!clicked.current)return
+
+       
+
+
+        redraw(ctx,canvas)
+
+        
 
 
 
-    const canvas = canvasRef.current;
+
+
+
+      }
+
+      canvas.addEventListener("mousedown",handleMouseDown)
+      canvas.addEventListener("mouseup",handleMouseUp)
+      canvas.addEventListener("mousemove",handleMouseMove)
+
+      
+
+      return () => {
+      canvas.removeEventListener(
+        "mousedown",
+        handleMouseDown
+      );
+      canvas.removeEventListener(
+        "mouseup",
+        handleMouseUp
+      );
+      canvas.removeEventListener(
+        "mousemove",
+        handleMouseMove
+      );
+    };
+
+
+
+
+
+
+
+    }
+
+
+
+      if(tool==="RECTANGLE"){
+
+        const canvas = canvasRef.current;
 
     if (!canvas) return;
 
@@ -114,7 +223,7 @@ export default function Canvas({ slug }: { slug: string }) {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    ctx.strokeStyle = "white";
+    ctx.strokeStyle = "black";
 
     const handleMouseDown = (e: MouseEvent) => {
       clicked.current = true;
@@ -184,12 +293,23 @@ export default function Canvas({ slug }: { slug: string }) {
         handleMouseMove
       );
     };
+
+
+
+
+      }
+
+    
   }, []);
 
   return (
+    <>
+    
+    <Toolbar tool={tool} setTool={setTool} />
     <canvas
       ref={canvasRef}
       className="w-screen h-screen"
     />
+    </>
   );
 }

@@ -12,7 +12,8 @@ export interface CircleShape {
   type: "CIRCLE";
   x: number;
   y: number;
-  radius: number;
+  width: number
+  height:number
 }
 
 export interface LineShape {

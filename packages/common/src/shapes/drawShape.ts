@@ -24,8 +24,16 @@ export function drawShape(ctx:CanvasRenderingContext2D,shape:Shape){
 
 
         case "CIRCLE":
-
-        ctx.arc(shape.x,shape.y,shape.radius,0,Math.PI*2)
+        ctx.beginPath()
+        ctx.ellipse(
+            shape.x+shape.width/2,
+            shape.y+shape.height/2,
+            Math.abs(shape.width/2),
+            Math.abs(shape.height/2),
+            0,
+            0,
+            Math.PI*2
+        )
         ctx.stroke()
 
         break

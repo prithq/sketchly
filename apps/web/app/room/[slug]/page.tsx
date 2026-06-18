@@ -16,8 +16,7 @@ export default async function RoomPage({
 
 console.log(session);
   return (
-    <div>
-        <Toolbar />
+    <div className="bg-white">
       <Canvas slug={slug}/>
     </div>
   );
