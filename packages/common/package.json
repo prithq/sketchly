@@ -17,6 +17,7 @@
   "exports":{
     ".":"./src/index.ts",
     "./types":"./src/shapes/types.ts",
-    "./drawShape":"./src/shapes/drawShape.ts"
+    "./drawShape":"./src/shapes/drawShape.ts",
+    "./tool":"./types/tool.ts"
   }
 }

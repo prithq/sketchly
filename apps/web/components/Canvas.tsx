@@ -2,14 +2,12 @@
 
 import { useEffect, useRef,useState } from "react";
 import { Shape } from "@repo/common/types";
-import Toolbar from "@/components/Toolbar";
 import {drawShape} from "@repo/common/drawShape"
+import {Tool} from "@repo/common/types"
 
 
+export default function Canvas({ slug,tool }: { slug: string ,tool:Tool}) {
 
-export default function Canvas({ slug }: { slug: string }) {
-
-  const [tool,setTool]=useState<"SELECT"|"RECTANGLE"|"CIRCLE"|"LINE">("CIRCLE")
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -18,6 +16,15 @@ export default function Canvas({ slug }: { slug: string }) {
   const startY = useRef(0);
 
   const shapes = useRef<Shape[]>([]);
+
+useEffect(() => {
+  const canvas = canvasRef.current;
+
+  if (!canvas) return;
+
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}, []);
 
 
   useEffect(() => {
@@ -106,9 +113,6 @@ export default function Canvas({ slug }: { slug: string }) {
     const ctx=canvas.getContext("2d")
     if(!ctx)return
 
-  
-    canvas.width=window.innerWidth
-    canvas.height=window.innerHeight
 
     ctx.strokeStyle="black"
 
@@ -350,7 +354,7 @@ export default function Canvas({ slug }: { slug: string }) {
   return (
     <>
     
-    <Toolbar tool={tool} setTool={setTool} />
+    
     <canvas
       ref={canvasRef}
       className="w-screen h-screen"
