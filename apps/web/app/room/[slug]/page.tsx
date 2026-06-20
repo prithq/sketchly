@@ -11,6 +11,9 @@ import { Tool } from "@repo/common/types";
 export default function RoomPage({ params }: { params: { slug: string } }) {
   const [slug, setSlug] = useState<string>("");
   const [tool, setTool] = useState<Tool>("SELECT");
+  const [strokeColor,setStrokeColor] = useState("#000000")
+  const [backgroundColor,setBackgroundColor]=useState("ffffff")
+
 
   useEffect(() => {
     
@@ -36,8 +39,21 @@ export default function RoomPage({ params }: { params: { slug: string } }) {
   return (
     <div className="bg-white relative">
       
-      <Toolbar tool={tool} setTool={setTool} />
-      <Canvas slug={slug} tool={tool} />
+      <Toolbar
+  tool={tool}
+  setTool={setTool}
+  strokeColor={strokeColor}
+  setStrokeColor={setStrokeColor}
+  backgroundColor={backgroundColor}
+  setBackgroundColor={setBackgroundColor}
+/>
+
+<Canvas
+  slug={slug}
+  tool={tool}
+  strokeColor={strokeColor}
+  backgroundColor={backgroundColor}
+/>
     </div>
   );
 }

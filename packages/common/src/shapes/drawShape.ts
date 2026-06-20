@@ -1,11 +1,12 @@
 import { Shape } from "./types";
 
-export function drawShape(ctx:CanvasRenderingContext2D,shape:Shape){
+export function drawShape(ctx:CanvasRenderingContext2D,shape:Shape,strokeColor:string){
 
 
     switch (shape.type) {
         case "RECTANGLE":
-
+ ctx.strokeStyle=shape.strokeColor
+ ctx.lineWidth = 2;
         ctx.strokeRect(
             shape.x,shape.y,shape.width,shape.height
         )
@@ -17,6 +18,8 @@ export function drawShape(ctx:CanvasRenderingContext2D,shape:Shape){
             ctx.beginPath()
             ctx.moveTo(shape.startX,shape.startY)
             ctx.lineTo(shape.endX,shape.endY)
+            ctx.lineWidth = 2;
+            ctx.strokeStyle=shape.strokeColor
             ctx.stroke()
 
 
@@ -34,6 +37,8 @@ export function drawShape(ctx:CanvasRenderingContext2D,shape:Shape){
             0,
             Math.PI*2
         )
+         ctx.strokeStyle=shape.strokeColor
+         ctx.lineWidth = 2;
         ctx.stroke()
 
         break

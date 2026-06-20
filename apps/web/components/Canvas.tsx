@@ -6,7 +6,7 @@ import {drawShape} from "@repo/common/drawShape"
 import {Tool} from "@repo/common/types"
 
 
-export default function Canvas({ slug,tool }: { slug: string ,tool:Tool}) {
+export default function Canvas({ slug,tool,backgroundColor,strokeColor }: { slug: string ,tool:Tool,backgroundColor:string,strokeColor:string}) {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
@@ -59,7 +59,7 @@ useEffect(() => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     shapes.current.forEach((shape) => {
-     drawShape(ctx,shape)
+     drawShape(ctx,shape,strokeColor)
     });
   }
 
@@ -119,10 +119,12 @@ useEffect(() => {
 
     const handleMouseDown=(e:MouseEvent)=>{
 
-      
+      const rect = canvas.getBoundingClientRect();
+
+
   clicked.current = true;
-  startX.current = e.clientX;
-  startY.current = e.clientY;
+  startX.current = e.clientX-rect.left;
+  startY.current = e.clientY-rect.top;
 
     }
 
@@ -143,7 +145,7 @@ useEffect(() => {
           x: startX.current,
           y: startY.current,
           width,
-          height,
+          height,strokeColor
         };
 
         shapes.current.push(shape)
@@ -178,7 +180,7 @@ useEffect(() => {
           x:startX.current,
           y:startY.current,
           width,
-          height
+          height,strokeColor
         }
         shapes.current.push(shape)
 
@@ -207,7 +209,7 @@ useEffect(() => {
           startX:startX.current,
           startY:startY.current,
           endX,
-          endY
+          endY,strokeColor
         }
 
         shapes.current.push(shape)
@@ -243,10 +245,10 @@ useEffect(() => {
           x: startX.current,
           y: startY.current,
           width,
-          height,
+          height,strokeColor
         };
        redraw(ctx,canvas)
-       
+        ctx.strokeStyle=strokeColor
       ctx.strokeRect(shape.x,shape.y,shape.width,shape.height)
 
 
@@ -272,7 +274,7 @@ useEffect(() => {
           x:startX.current,
           y:startY.current,
           width,
-          height
+          height,strokeColor
         }
 
         redraw(ctx,canvas)
@@ -283,7 +285,7 @@ useEffect(() => {
           Math.abs(width/2),
           Math.abs(height/2),0,0,Math.PI*2
         )
-
+         ctx.strokeStyle=strokeColor
         ctx.stroke()
 
 
@@ -309,10 +311,13 @@ useEffect(() => {
           startX:startX.current,
           startY:startY.current,
           endX,
-          endY
+          endY,
+          strokeColor
         }
+
+         ctx.strokeStyle=strokeColor
         redraw(ctx,canvas)
-        drawShape(ctx,shape)
+        drawShape(ctx,shape,strokeColor)
 
         
 
@@ -349,7 +354,7 @@ useEffect(() => {
 
 
 
-  },[tool])
+  },[tool,strokeColor])
 
   return (
     <>
@@ -357,7 +362,7 @@ useEffect(() => {
     
     <canvas
       ref={canvasRef}
-      className="w-screen h-screen"
+      className="w-screen h-screen" style={{backgroundColor:backgroundColor}}
     />
     </>
   );

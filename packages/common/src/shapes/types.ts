@@ -6,6 +6,7 @@ export interface RectangleShape {
   y: number;
   width: number;
   height: number;
+  strokeColor:string
 }
 
 export interface CircleShape {
@@ -14,6 +15,7 @@ export interface CircleShape {
   y: number;
   width: number
   height:number
+  strokeColor:string
 }
 
 export interface LineShape {
@@ -22,6 +24,7 @@ export interface LineShape {
   startY: number;
   endX: number;
   endY: number;
+  strokeColor:string
 }
 
 
