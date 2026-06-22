@@ -1,15 +1,21 @@
 "use client";
 
-import { authClient } from "@/lib/auth-client";
+import Link from "next/link";
+import { Menu, X } from "lucide-react";
+import { useState } from "react";
 
-export default function Home() {
-  const { data: session } = authClient.useSession();
+export default function Navbar() {
+  const [open, setOpen] = useState(false);
 
   return (
-    <div>
-      {session
-        ? session.user.email
-        : "Not logged in"}
+    <div className="min-h-screen max-w-7xl bg-white ">
+      <nav className="sticky top-0 z-50 flex items-center">
+
+      
+          
+
+      </nav>
+
     </div>
   );
 }

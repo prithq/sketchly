@@ -13,11 +13,13 @@
   "dependencies": {
     "@repo/db": "workspace:*",
     "@repo/ui": "workspace:*",
+    "@uploadthing/react": "^7.3.3",
     "better-auth": "^1.6.15",
     "lucide-react": "^1.20.0",
     "next": "16.2.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "uploadthing": "^7.7.4"
   },
   "devDependencies": {
     "@repo/common": "workspace:*",

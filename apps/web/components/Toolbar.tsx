@@ -81,7 +81,7 @@ export default function Toolbar({
   }, []);
 
   return (
-    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm  flex justify-center">
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm  flex justify-center">
       <div
         ref={popoverRef}
         className="relative flex flex-row items-center justify-around bg-white px-6 py-1.5 rounded-2xl shadow-lg border border-gray-100 h-12 w-full"

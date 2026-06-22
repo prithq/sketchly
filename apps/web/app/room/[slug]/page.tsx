@@ -6,7 +6,7 @@ import { authClient } from "@/lib/auth-client";
 import Toolbar from "@/components/Toolbar";
 import { useState, useEffect } from "react";
 import { Tool } from "@repo/common/types";
-
+import { UploadButton } from "@uploadthing/react";
 
 export default function RoomPage({ params }: { params: { slug: string } }) {
   const [slug, setSlug] = useState<string>("");
@@ -53,6 +53,15 @@ export default function RoomPage({ params }: { params: { slug: string } }) {
   tool={tool}
   strokeColor={strokeColor}
   backgroundColor={backgroundColor}
+/>
+
+
+
+<UploadButton
+  endpoint="imageUploader"
+  onClientUploadComplete={(res:any) => {
+    console.log(res);
+  }}
 />
     </div>
   );

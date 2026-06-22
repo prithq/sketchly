@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef,useState } from "react";
-import { Shape } from "@repo/common/types";
+import { Shape} from "@repo/common/types";
 import {drawShape} from "@repo/common/drawShape"
 import {Tool} from "@repo/common/types"
-
+import { isPointOnShape } from "@/lib/isPointOnShape";
 
 export default function Canvas({ slug,tool,backgroundColor,strokeColor }: { slug: string ,tool:Tool,backgroundColor:string,strokeColor:string}) {
 
@@ -59,7 +59,7 @@ useEffect(() => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     shapes.current.forEach((shape) => {
-     drawShape(ctx,shape,strokeColor)
+     drawShape(ctx,shape)
     });
   }
 
@@ -85,6 +85,23 @@ useEffect(() => {
     ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
 
+
+     if (message.type === "DELETE_SHAPE") {
+    const deleteId = message.shapeId;
+
+    shapes.current = shapes.current.filter(
+      (s)=>s.id !== deleteId
+    );
+
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+
+    if (!canvas || !ctx) return;
+
+    redraw(ctx, canvas);
+
+    return;
+  }
      if(message.shape){
   shapes.current.push(message.shape);
 
@@ -119,12 +136,77 @@ useEffect(() => {
 
     const handleMouseDown=(e:MouseEvent)=>{
 
+      if(tool==="TEXT"){
+
+        const text= prompt("Enter Text: ")
+
+        if(!text)return
+
+        const rect = canvas.getBoundingClientRect();
+
+        const shape:Shape={
+          id:crypto.randomUUID(),
+          type:"TEXT",
+          x:e.clientX-rect.left,
+          y:e.clientY - rect.top,
+          text,
+          strokeColor
+        }
+
+        shapes.current.push(shape)
+
+        wsRef.current?.send(
+          JSON.stringify({
+            type:"TEXT",
+            shape
+          })
+        )
+
+        redraw(ctx,canvas)
+
+
+
+      }
+
+      if(tool==="ERASER"){
+        const rect=canvas.getBoundingClientRect()
+        const x=e.clientX-rect.left
+        const y=e.clientY-rect.top
+
+        for(let i=shapes.current.length-1;i>=0;i--){
+          const shape=shapes.current[i]
+          if(!shape) continue;
+
+          if(isPointOnShape(x,y,shape)){
+            const deleteId=shape.id
+
+            shapes.current=shapes.current.filter(s=>s.id!==deleteId)
+
+            redraw(ctx,canvas)
+
+             wsRef.current?.send(
+              JSON.stringify({
+                type:
+                  "DELETE_SHAPE",
+                shapeId:
+                  deleteId,
+              })
+            );
+            break;
+          }
+
+        }
+        return
+      }
+
       const rect = canvas.getBoundingClientRect();
 
 
   clicked.current = true;
   startX.current = e.clientX-rect.left;
   startY.current = e.clientY-rect.top;
+
+  
 
     }
 
@@ -141,6 +223,7 @@ useEffect(() => {
         const height=e.clientY-startY.current
 
         const shape: Shape = {
+          id:crypto.randomUUID(),
           type: "RECTANGLE",
           x: startX.current,
           y: startY.current,
@@ -176,6 +259,7 @@ useEffect(() => {
 
         
         const shape:Shape={
+          id:crypto.randomUUID(),
           type:"CIRCLE",
           x:startX.current,
           y:startY.current,
@@ -205,6 +289,7 @@ useEffect(() => {
         const endY=e.clientY
 
         const shape:Shape={
+          id:crypto.randomUUID(),
           type:"LINE",
           startX:startX.current,
           startY:startY.current,
@@ -220,6 +305,39 @@ useEffect(() => {
         }))
 
         redraw(ctx,canvas)
+
+      }
+
+      if(tool==="ARROW"){
+
+        if(!clicked.current)return
+
+        clicked.current=false
+
+         const shape: Shape = {
+          id:crypto.randomUUID(),
+     type: "ARROW",
+     startX: startX.current,
+     startY: startY.current,
+     endX: e.clientX,
+     endY: e.clientY,
+     strokeColor,
+  };
+
+
+  shapes.current.push(shape)
+
+  wsRef.current?.send(JSON.stringify({
+    type:"ARROW",
+    shape
+  }))
+
+  redraw(ctx,canvas)
+
+
+
+
+
 
       }
 
@@ -241,6 +359,7 @@ useEffect(() => {
         
 
         const shape: Shape = {
+          id:crypto.randomUUID(),
           type: "RECTANGLE",
           x: startX.current,
           y: startY.current,
@@ -270,6 +389,7 @@ useEffect(() => {
 
         
         const shape:Shape={
+          id:crypto.randomUUID(),
           type:"CIRCLE",
           x:startX.current,
           y:startY.current,
@@ -307,6 +427,7 @@ useEffect(() => {
         const endY=e.clientY
 
         const shape:Shape={
+          id:crypto.randomUUID(),
           type:"LINE",
           startX:startX.current,
           startY:startY.current,
@@ -317,11 +438,31 @@ useEffect(() => {
 
          ctx.strokeStyle=strokeColor
         redraw(ctx,canvas)
-        drawShape(ctx,shape,strokeColor)
+        drawShape(ctx,shape)
 
         
 
       }
+
+
+      if(tool==="ARROW"){
+
+  if(!clicked.current) return;
+
+  const shape: Shape = {
+    id:crypto.randomUUID(),
+    type: "ARROW",
+    startX: startX.current,
+    startY: startY.current,
+    endX: e.clientX,
+    endY: e.clientY,
+    strokeColor,
+  };
+
+  redraw(ctx, canvas);
+
+  drawShape(ctx, shape);
+}
 
 
 
