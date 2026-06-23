@@ -68,25 +68,83 @@ ws.on("connection", async (socket,req)=>{
 socket.on("message",async (data)=>{
 
         const roomSockets=rooms.get(room.slug)
+        const message = JSON.parse(
+         data.toString()
+                );
+
+    
+    if (
+  message.type === "RECTANGLE" ||
+  message.type === "CIRCLE" ||
+  message.type === "LINE" ||
+  message.type === "ARROW" ||
+  message.type === "TEXT" ||
+  message.type === "IMAGE"
+) {
+
+  roomSockets?.forEach((client) => {
+    if (client !== socket) {
+      client.send(data.toString());
+    }
+  });
+
+  await prisma.shape.create({
+    data: {
+      roomId: room.id,
+      userId: user.id,
+      shapeData: message.shape,
+    },
+  });
+
+  return;
+}
+
+if(message.type==="DELETE_SHAPE"){
 
 
-        roomSockets?.forEach((client)=>{
-            if(client!==socket){
-                client.send(data.toString())
-            }
-        })
+const dbShapes=await prisma.shape.findMany({
+    where:{
+        roomId:room.id
+
+    }
+})
+
+const target=dbShapes.find((s)=>(s.shapeData as any).id===message.shapeId)
+
+await prisma.shape.delete({
+    where:{
+        id:target!.id
+    }
+})
 
 
-        
-        
-            await prisma.shape.create({
-                data:{
-                    roomId:room.id,
-                    userId:user.id,
-                    shapeData:JSON.parse(data.toString())
-                }
-            })
 
+}
+
+if(message.type==="MOVE_SHAPE"){
+    const dbShapes=await prisma.shape.findMany({
+        where:{
+            roomId:room.id
+        }
+    })
+
+    const target=dbShapes.find((s)=>(s.shapeData as any).id===message.shapeId)
+    if (!target) return;
+
+    const shapeData:any=target.shapeData
+    shapeData.x=message.x
+    shapeData.y=message.y                                 
+
+
+    await prisma.shape.update({
+  where: {
+    id: target.id,
+  },
+  data: {
+    shapeData,
+  },
+});
+}
 
 
     

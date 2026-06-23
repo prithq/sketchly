@@ -118,6 +118,33 @@ useEffect(() => {
 
     return;
   }
+
+
+
+  if (message.type === "MOVE_SHAPE") {
+
+  const shape =
+    shapes.current.find(
+      (s) => s.id === message.shapeId
+    );
+
+  if (shape) {
+    if (
+      shape.type === "TEXT" ||
+      shape.type === "IMAGE"
+    ) {
+      shape.x = message.x;
+      shape.y = message.y;
+    }
+  }
+
+  const canvas = canvasRef.current;
+  const ctx = canvas?.getContext("2d");
+
+  if (!canvas || !ctx) return;
+
+  redraw(ctx, canvas);
+}
      if(message.shape){
   shapes.current.push(message.shape);
 
@@ -328,6 +355,22 @@ if (
 
       if(tool === "SELECT"){
       dragging.current = false;
+
+      const shape=shapes.current.find((s)=>s.id===selectedShapeId.current)
+
+      if (
+        shape &&
+        (shape.type === "TEXT" || shape.type === "IMAGE")
+      ) {
+        wsRef.current?.send(
+          JSON.stringify({
+            type:"MOVE_SHAPE",
+            shapeId:shape.id,
+            x:shape.x,
+            y:shape.y
+          })
+        )
+      }
      return;
 }
 
