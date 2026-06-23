@@ -11,16 +11,6 @@ export interface RectangleShape {
 }
 
 
-export interface ImageShape {
-  id: string;
-  type: "IMAGE";
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  imageUrl: string;
-}
-
 export interface TextShape {
   id:string
   type: "TEXT";
@@ -59,7 +49,15 @@ export interface ArrowShape {
   endY: number;
   strokeColor: string;
 }
-
+export interface ImageShape {
+  id: string;
+  type: "IMAGE";
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  imageData: string;
+}
 
 export type Shape =
   | RectangleShape

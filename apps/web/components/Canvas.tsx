@@ -16,6 +16,23 @@ export default function Canvas({ slug,tool,backgroundColor,strokeColor }: { slug
   const startY = useRef(0);
 
   const shapes = useRef<Shape[]>([]);
+  const imageInputRef =
+  useRef<HTMLInputElement>(null);
+
+const pendingImageRef =
+  useRef<string | null>(null);
+
+  const selectedShapeId =
+  useRef<string | null>(null);
+
+const dragging =
+  useRef(false);
+
+const dragOffsetX =
+  useRef(0);
+
+const dragOffsetY =
+  useRef(0);
 
 useEffect(() => {
   const canvas = canvasRef.current;
@@ -85,7 +102,6 @@ useEffect(() => {
     ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
 
-
      if (message.type === "DELETE_SHAPE") {
     const deleteId = message.shapeId;
 
@@ -135,6 +151,70 @@ useEffect(() => {
 
 
     const handleMouseDown=(e:MouseEvent)=>{
+      if (
+  tool === "IMAGE" &&
+  !pendingImageRef.current
+) {
+  imageInputRef.current?.click();
+  return;
+}
+
+    if(tool==="SELECT"){
+      const rect=canvas.getBoundingClientRect()
+      const mouseX=e.clientX-rect.left
+      const mouseY=e.clientY-rect.top
+
+      for(let i=shapes.current.length-1;i>=0;i--){
+        const shape=shapes.current[i]
+        if(!shape)return
+          if (
+    shape.type === "IMAGE" &&
+    mouseX >= shape.x &&
+    mouseX <= shape.x + shape.width &&
+    mouseY >= shape.y &&
+    mouseY <= shape.y + shape.height
+  ) {
+    selectedShapeId.current =
+      shape.id;
+
+    dragging.current = true;
+
+    dragOffsetX.current =
+      mouseX - shape.x;
+
+    dragOffsetY.current =
+      mouseY - shape.y;
+
+    return;
+  }
+
+      if (
+    shape.type === "TEXT" &&
+    mouseX >= shape.x &&
+    mouseX <=
+      shape.x +
+        shape.text.length * 12 &&
+    mouseY >= shape.y - 24 &&
+    mouseY <= shape.y
+  ) {
+    selectedShapeId.current =
+      shape.id;
+
+    dragging.current = true;
+
+    dragOffsetX.current =
+      mouseX - shape.x;
+
+    dragOffsetY.current =
+      mouseY - shape.y;
+
+    return;
+  }
+}
+  
+      }
+
+    
 
       if(tool==="TEXT"){
 
@@ -198,6 +278,39 @@ useEffect(() => {
         }
         return
       }
+if (
+  tool === "IMAGE" &&
+  pendingImageRef.current
+) {
+   const rect = canvas.getBoundingClientRect();
+    const x = e.clientX-rect.left;
+ const y = e.clientY-rect.top;
+  const shape: Shape = {
+    id: crypto.randomUUID(),
+    type: "IMAGE",
+    x,
+    y,
+    width: 300,
+    height: 200,
+    imageData:
+      pendingImageRef.current,
+  };
+
+  shapes.current.push(shape);
+
+  wsRef.current?.send(
+    JSON.stringify({
+      type: "IMAGE",
+      shape,
+    })
+  );
+
+  redraw(ctx, canvas);
+
+  pendingImageRef.current = null;
+
+  return;
+}
 
       const rect = canvas.getBoundingClientRect();
 
@@ -211,6 +324,12 @@ useEffect(() => {
     }
 
     const handleMouseUp=(e:MouseEvent)=>{
+
+
+      if(tool === "SELECT"){
+      dragging.current = false;
+     return;
+}
 
       if(tool==="RECTANGLE"){
 
@@ -335,20 +454,49 @@ useEffect(() => {
   redraw(ctx,canvas)
 
 
-
-
-
-
       }
-
-
-
-
-
 
     }
 
     const handleMouseMove=(e:MouseEvent)=>{
+
+      if(tool==="SELECT" && dragging.current){
+
+          const rect =
+        canvas.getBoundingClientRect();
+
+        const mouseX =
+        e.clientX - rect.left;
+
+        const mouseY =
+        e.clientY - rect.top;
+
+        const shape =
+        shapes.current.find(
+          (s) =>
+            s.id ===
+            selectedShapeId.current
+        );
+
+        if (!shape) return;
+
+        if (
+        shape.type === "TEXT" ||
+        shape.type === "IMAGE"
+        ) {
+        shape.x =
+          mouseX - dragOffsetX.current;
+
+        shape.y =
+          mouseY - dragOffsetY.current;
+        }
+
+        redraw(ctx, canvas);
+
+        return;
+
+
+      }
 
       if(tool==="RECTANGLE"){
 
@@ -500,7 +648,26 @@ useEffect(() => {
   return (
     <>
     
-    
+    <input
+  ref={imageInputRef}
+  type="file"
+  accept="image/*"
+  hidden
+  onChange={(e) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      pendingImageRef.current =
+        reader.result as string;
+    };
+
+    reader.readAsDataURL(file);
+  }}
+/>
     <canvas
       ref={canvasRef}
       className="w-screen h-screen" style={{backgroundColor:backgroundColor}}

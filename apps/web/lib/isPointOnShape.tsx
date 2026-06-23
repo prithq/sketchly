@@ -28,6 +28,14 @@ export function isPointOnShape(
     case "TEXT":
       return isTextHit(x, y, shape);
 
+    case "IMAGE":
+      return(
+        x >= shape.x &&
+    x <= shape.x + shape.width &&
+    y >= shape.y &&
+    y <= shape.y + shape.height
+      )
+
     default:
       return false;
   }

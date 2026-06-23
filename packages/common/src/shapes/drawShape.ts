@@ -109,6 +109,15 @@ case "TEXT":
     shape.y
   );
   break;
+
+case "IMAGE":
+
+const img=new Image()
+img.src=shape.imageData
+img.onload=()=>{
+  ctx.drawImage(img,shape.x,shape.y,shape.width,shape.height)
+}
+break
         default:
             break;
     }
