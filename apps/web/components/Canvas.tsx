@@ -19,6 +19,10 @@ export default function Canvas({ slug,tool,backgroundColor,strokeColor }: { slug
   const imageInputRef =
   useRef<HTMLInputElement>(null);
 
+  const imageCache = useRef<
+  Map<string, HTMLImageElement>
+>(new Map());
+
 const pendingImageRef =
   useRef<string | null>(null);
 
@@ -62,6 +66,18 @@ useEffect(() => {
     const ctx = canvas?.getContext("2d");
 
     if (!canvas || !ctx) return;
+
+    for(const shape of shapes.current){
+      if(shape.type==="IMAGE"){
+        const img=new Image()
+        img.src=shape.imageData
+
+        img.onload=()=>{
+          imageCache.current.set(shape.id,img)
+          redraw(ctx,canvas)
+        }
+      }
+    }
 
     redraw(ctx, canvas);
   }
@@ -147,6 +163,16 @@ useEffect(() => {
 }
      if(message.shape){
   shapes.current.push(message.shape);
+
+  if(message.current.type==="IMAGE"){
+    const img=new Image()
+
+    img.src=message.shape.imageData
+    img.onload=()=>{
+      imageCache.current.set(message.shape.id,img)
+      redraw(ctx,canvas)
+    }
+  }
 
   const canvas = canvasRef.current;
   const ctx = canvas?.getContext("2d");
@@ -322,6 +348,14 @@ if (
     imageData:
       pendingImageRef.current,
   };
+
+  const img=new Image(
+    img.src=shape.imageData
+
+    img.onload=()=>{
+      imageCache.current.set(shape.id,img)
+    }
+  )
 
   shapes.current.push(shape);
 
@@ -629,7 +663,7 @@ if (
 
          ctx.strokeStyle=strokeColor
         redraw(ctx,canvas)
-        drawShape(ctx,shape)
+        drawShape(ctx,shape,imageCache)
 
         
 

@@ -9,19 +9,16 @@ import { string } from "zod";
 
 const roomRouter: Router = Router();
 
-roomRouter.post("/create",requireAuth,async (req,res)=>{
+roomRouter.get("/", requireAuth, async (req, res) => {
+  const user = (req as any).user;
+  const rooms = await prisma.room.findMany({
+    where: { ownerId: user.id },
+    orderBy: { createdAt: "desc" },
+  });
+  res.json(rooms);
+});
 
-    const user=(req as any).user
-
-    const parsed = createRoomSchema.safeParse(req.body);
-    if (!parsed.success) {
-    return res.status(400).json({
-      error: parsed.error.name
-    });
-  }
-  
-  
-  roomRouter.get("/:slug/shapes",async(req,res)=>{
+ roomRouter.get("/:slug/shapes",async(req,res)=>{
   
   const room=await prisma.room.findUnique({
     where:{
@@ -42,6 +39,20 @@ roomRouter.post("/create",requireAuth,async (req,res)=>{
     
   res.json(room.shapes)
   })
+
+roomRouter.post("/create",requireAuth,async (req,res)=>{
+
+    const user=(req as any).user
+
+    const parsed = createRoomSchema.safeParse(req.body);
+    if (!parsed.success) {
+    return res.status(400).json({
+      error: parsed.error.name
+    });
+  }
+  
+  
+ 
     const createRoom= await prisma.room.create({
        
         data:{

@@ -36,7 +36,7 @@ function drawArrow(
   ctx.stroke();
 }
 
-export function drawShape(ctx:CanvasRenderingContext2D,shape:Shape){
+export function drawShape(ctx:CanvasRenderingContext2D,shape:Shape,imageCache:Map<string,HTMLImageElement>){
 
     
 
@@ -112,11 +112,17 @@ case "TEXT":
 
 case "IMAGE":
 
-const img=new Image()
-img.src=shape.imageData
-img.onload=()=>{
-  ctx.drawImage(img,shape.x,shape.y,shape.width,shape.height)
+const img=imageCache.get(shape.id)
+if(img){
+ ctx.drawImage(
+      img,
+      shape.x,
+      shape.y,
+      shape.width,
+      shape.height
+    );
 }
+
 break
         default:
             break;

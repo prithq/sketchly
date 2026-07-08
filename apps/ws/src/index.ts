@@ -146,7 +146,6 @@ if(message.type==="MOVE_SHAPE"){
 });
 }
 
-
     
     })        
 
